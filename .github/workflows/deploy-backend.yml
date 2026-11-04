@@ -98,7 +98,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/imgae-upload-server
+            cd ~/image-upload
             git fetch origin
             git checkout main
             git pull origin main
