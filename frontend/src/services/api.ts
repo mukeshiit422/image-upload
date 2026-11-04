@@ -7,8 +7,13 @@ import {
   UploadedImageResponse,
 } from '../types';
 
+const apiUrl =
+  (window as any).__CONFIG__?.API_URL ??
+  import.meta.env.VITE_API_URL ??
+  'http://localhost:3000';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${apiUrl}/api`,
   timeout: 60_000,
 });
 
@@ -34,7 +39,6 @@ export async function uploadImage(
     '/images/upload',
     form,
     {
-      headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (event: AxiosProgressEvent) => {
         if (event.total) {
           onProgress(Math.round((event.loaded / event.total) * 100));
