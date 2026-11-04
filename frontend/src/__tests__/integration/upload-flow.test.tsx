@@ -17,8 +17,6 @@ function makeJpeg(name = 'photo.jpg'): File {
 
 describe('Upload flow integration', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-
     mockApi.uploadImage.mockResolvedValue({
       id: 'test-id-123',
       originalName: 'photo.jpg',
@@ -44,8 +42,8 @@ describe('Upload flow integration', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it('calls uploadImage when a valid file is uploaded', async () => {
@@ -60,12 +58,14 @@ describe('Upload flow integration', () => {
   });
 
   it('starts polling getImageStatus after a successful upload', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
     render(<App />);
 
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await userEvent.upload(input, makeJpeg());
 
-    // Wait for upload to complete
+    // Wait for upload to complete (use real time via shouldAdvanceTime)
     await waitFor(() => {
       expect(mockApi.uploadImage).toHaveBeenCalled();
     }, { timeout: 3000 });
@@ -78,6 +78,8 @@ describe('Upload flow integration', () => {
     await waitFor(() => {
       expect(mockApi.getImageStatus).toHaveBeenCalledWith('test-id-123');
     }, { timeout: 3000 });
+
+    vi.useRealTimers();
   });
 
   it('sets error state when upload fails', async () => {
