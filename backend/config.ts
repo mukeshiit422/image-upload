@@ -25,13 +25,28 @@ function getEnvFloat(key: string, fallback: number): number {
   return isNaN(parsed) ? fallback : parsed;
 }
 
+const dbHost     = requireEnv('DB_HOST', 'localhost');
+const dbPort     = getEnvNumber('DB_PORT', 5432);
+const dbUser     = requireEnv('DB_USER', 'postgres');
+const dbPassword = requireEnv('DB_PASSWORD', 'password');
+const dbName     = requireEnv('DB_NAME', 'image_upload_db');
+
+// Prisma reads DATABASE_URL from process.env — construct it from individual parts
+const databaseUrl = `postgresql://${dbUser}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}`;
+process.env.DATABASE_URL = databaseUrl;
+
 export const config = {
   port: getEnvNumber('PORT', 4000),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   isDevelopment: (process.env.NODE_ENV ?? 'development') === 'development',
 
   database: {
-    url: requireEnv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/image_upload_db'),
+    host:     dbHost,
+    port:     dbPort,
+    user:     dbUser,
+    password: dbPassword,
+    name:     dbName,
+    url:      databaseUrl,
   },
 
   aws: {
