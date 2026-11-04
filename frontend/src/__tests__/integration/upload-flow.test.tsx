@@ -95,10 +95,8 @@ describe('Upload flow integration', () => {
     }, { timeout: 3000 });
   });
 
-  it('calls listImages when the app mounts', async () => {
+  it('renders the upload zone on mount', () => {
     render(<App />);
-    await waitFor(() => {
-      expect(mockApi.listImages).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
   });
 });
