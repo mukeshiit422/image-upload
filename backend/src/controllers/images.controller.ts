@@ -17,8 +17,8 @@ import {
   UploadedImageResponse,
 } from '../types';
 
-function normalizeUrl(url: string | null | undefined): string | null | undefined {
-  if (!url || !config.aws.imageBaseUrl) return url;
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url || !config.aws.imageBaseUrl) return url ?? null;
   return url.replace(
     `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com`,
     config.aws.imageBaseUrl
