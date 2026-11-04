@@ -1,0 +1,30 @@
+### **Frontend**
+
+- Users should be able to **upload images**, which will be categorized into **Accepted** and **Rejected** sections based on validations.
+- Implement **frontend validations** to allow only **HEIC, PNG, and JPEG** formats before uploading.
+- Provide **real-time feedback** to users about the status of their uploads (e.g., success, failure, reasons for rejection).
+- Use **state management** (e.g., React hooks) for handling the image upload process.
+- Display **image previews** for uploaded files.
+
+### **Backend**
+
+- Develop a **REST API** using **Node.js** with **Express**.
+- Store image metadata and statuses in a **PostgreSQL** database with a well-structured schema.
+- Store image files in **Amazon S3** or an equivalent cloud storage service. You can setup a free tier account or use another equivalent infra service that is easy to setup
+- Ensure API endpoints follow proper **RESTful conventions** (e.g., CRUD operations).
+- Design an efficient system for **storing, retrieving, and processing images** asynchronously.
+- Implement **secure file handling** to prevent vulnerabilities.
+- Use an **ORM** Prisma for database interactions.
+- Optimize database queries for **performance and scalability** to handle **large-scale uploads**.
+- Implement a system for **converting HEIC images** to PNG or JPEG format using an image processing library `sharp` .
+
+### **Validation Requirements**
+
+The image validation rules to implement:
+
+1. **Reject images** that are **too small** in size or resolution.
+2. **Reject images** that are not in **JPG, PNG, or HEIC** format.
+3. **Reject images** that are **too similar** to an existing one.
+4. **Reject blurry images.**
+5. **Reject images** if the **detected face is too small**.
+6. **Reject images** containing **multiple faces.**
