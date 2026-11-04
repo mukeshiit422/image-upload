@@ -1,6 +1,6 @@
 node_modules/
 dist/
-.env
+*.env*
 *.log
 uploads/*
 !uploads/.gitkeep
@@ -8,3 +8,4 @@ uploads/*
 models/*
 !models/.gitkeep
 .DS_Store
+.env.test
