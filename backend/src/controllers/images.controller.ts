@@ -7,6 +7,7 @@ import { storageService } from '../services/storage.service';
 import { uploadMiddleware, normalizeHeicMime } from '../middleware/upload.middleware';
 import { AppError, asyncHandler } from '../utils/async-handler';
 import { logger } from '../utils/logger';
+import { config } from '../../config';
 import {
   ApiResponse,
   ImageRecord,
@@ -15,6 +16,14 @@ import {
   PaginatedResponse,
   UploadedImageResponse,
 } from '../types';
+
+function normalizeUrl(url: string | null | undefined): string | null | undefined {
+  if (!url || !config.aws.imageBaseUrl) return url;
+  return url.replace(
+    `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com`,
+    config.aws.imageBaseUrl
+  );
+}
 
 export class ImagesController {
   constructor(
@@ -98,7 +107,11 @@ export class ImagesController {
 
     const response: ApiResponse<ImageRecord> = {
       success: true,
-      data: image as ImageRecord,
+      data: {
+        ...image,
+        storageUrl: normalizeUrl(image.storageUrl),
+        thumbnailUrl: normalizeUrl(image.thumbnailUrl),
+      } as ImageRecord,
     };
     res.json(response);
   });
@@ -142,7 +155,11 @@ export class ImagesController {
     const response: ApiResponse<PaginatedResponse<ImageRecord>> = {
       success: true,
       data: {
-        items: items as ImageRecord[],
+        items: (items as ImageRecord[]).map(item => ({
+          ...item,
+          storageUrl: normalizeUrl(item.storageUrl),
+          thumbnailUrl: normalizeUrl(item.thumbnailUrl),
+        })),
         total,
         page,
         limit,

@@ -84,7 +84,9 @@ class StorageService {
 
     await this.s3Client!.send(command);
 
-    const url = config.aws.endpointUrl
+    const url = config.aws.imageBaseUrl
+      ? `${config.aws.imageBaseUrl}/${key}`
+      : config.aws.endpointUrl
       ? `${config.aws.endpointUrl}/${config.aws.bucket}/${key}`
       : `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
 
