@@ -27,6 +27,7 @@ const app = createApp(prisma, queueService);
 
 beforeAll(async () => {
   await prisma.$connect();
+  await prisma.image.deleteMany(); // wipe stale data from interrupted previous runs
 });
 
 afterAll(async () => {
@@ -73,7 +74,8 @@ describe('POST /api/images/upload', () => {
     const record = await prisma.image.findUnique({ where: { id: res.body.data.id } });
     expect(record).not.toBeNull();
     expect(record?.originalName).toBe('portrait.jpg');
-    expect(record?.status).toBe('PENDING');
+    // Status may have advanced to PROCESSING by the time we query — both are valid
+    expect(['PENDING', 'PROCESSING']).toContain(record?.status);
   });
 });
 

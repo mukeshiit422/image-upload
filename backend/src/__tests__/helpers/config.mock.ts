@@ -1,3 +1,16 @@
+import fs from 'fs';
+import os from 'os';
+
+// Set DATABASE_URL before Prisma client initialises (uses CI value or local fallback)
+const testDbUrl =
+  process.env.DATABASE_URL ??
+  'postgresql://postgres:postgres@localhost:5432/image_upload_test';
+process.env.DATABASE_URL = testDbUrl;
+
+const testUploadDir = `${os.tmpdir()}/test-uploads`;
+const testTempDir   = `${testUploadDir}/temp`;
+fs.mkdirSync(testTempDir, { recursive: true });
+
 export const config = {
   port: 3000,
   nodeEnv: 'test',
@@ -13,8 +26,8 @@ export const config = {
   },
   storage: {
     mode: 'local' as const,
-    localUploadDir: '/tmp/test-uploads',
-    tempDir: '/tmp/test-uploads/temp',
+    localUploadDir: testUploadDir,
+    tempDir: testTempDir,
     modelsDir: '/tmp/models',
   },
   validation: {

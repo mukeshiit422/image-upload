@@ -16,12 +16,19 @@ jest.mock('../../services/face-detection.service', () => ({
 const prisma = new PrismaClient();
 const app = createApp(prisma, new QueueService(prisma));
 
+beforeAll(async () => {
+  await prisma.$connect();
+  await prisma.image.deleteMany(); // wipe stale data from interrupted previous runs
+});
+
 afterAll(async () => {
   await prisma.image.deleteMany();
   await prisma.$disconnect();
 });
 
-afterEach(() => prisma.image.deleteMany());
+afterEach(async () => {
+  await prisma.image.deleteMany();
+});
 
 describe('Regression: S3 URLs must be rewritten to CloudFront in API responses', () => {
   // Bug: search/list was returning raw S3 URLs instead of CloudFront URLs.
