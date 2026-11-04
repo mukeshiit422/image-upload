@@ -55,7 +55,7 @@ export const config = {
     region: process.env.AWS_REGION ?? 'us-east-1',
     bucket: process.env.AWS_S3_BUCKET,
     endpointUrl: process.env.AWS_ENDPOINT_URL,
-    imageBaseUrl: process.env.IMAGE_BASE_URL,
+    imageBaseUrl: process.env.CDN_URL,
   },
 
   storage: {
@@ -79,7 +79,7 @@ export const config = {
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: process.env.CDN_URL ?? 'http://localhost:5173',
   },
 
   rateLimit: {
