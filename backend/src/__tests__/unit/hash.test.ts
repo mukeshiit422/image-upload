@@ -3,7 +3,7 @@
  * Pure functions, no mocks needed.
  */
 import { hammingDistance, computePerceptualHash, computeLaplacianVariance } from '../../utils/hash';
-import { createTestImage } from '../helpers/image-factory';
+import { createTestImage, createGradientImage, createCheckerboardImage } from '../helpers/image-factory';
 
 describe('hammingDistance', () => {
   it('returns 0 for identical hashes', () => {
@@ -26,39 +26,41 @@ describe('hammingDistance', () => {
 
 describe('computePerceptualHash', () => {
   it('returns a 64-character binary string', async () => {
-    const image = await createTestImage();
+    const image = await createGradientImage();
     const hash = await computePerceptualHash(image);
     expect(hash).toHaveLength(64);
     expect(hash).toMatch(/^[01]+$/);
   });
 
   it('produces the same hash for the same image', async () => {
-    const image = await createTestImage();
+    const image = await createGradientImage();
     const hash1 = await computePerceptualHash(image);
     const hash2 = await computePerceptualHash(image);
     expect(hash1).toBe(hash2);
   });
 
-  it('produces different hashes for different images', async () => {
-    const image1 = await createTestImage({ width: 400, height: 400 });
-    const image2 = await createTestImage({ width: 500, height: 300 });
-    const hash1 = await computePerceptualHash(image1);
-    const hash2 = await computePerceptualHash(image2);
-    expect(hash1).not.toBe(hash2);
+  it('produces different hashes for visually different images', async () => {
+    const gradient     = await createGradientImage();
+    const checkerboard = await createCheckerboardImage();
+    const hash1 = await computePerceptualHash(gradient);
+    const hash2 = await computePerceptualHash(checkerboard);
+    // These are visually very different — Hamming distance must be large
+    expect(hammingDistance(hash1, hash2)).toBeGreaterThan(10);
   });
 });
 
 describe('computeLaplacianVariance', () => {
-  it('returns a positive number for a normal image', async () => {
-    const image = await createTestImage();
+  it('returns a positive number for an image with edges', async () => {
+    // Gradient image has pixel transitions → non-zero Laplacian variance
+    const image = await createGradientImage();
     const variance = await computeLaplacianVariance(image);
     expect(variance).toBeGreaterThan(0);
   });
 
-  it('returns a low variance for a flat-color (blurry-like) image', async () => {
+  it('returns near-zero variance for a flat-color image', async () => {
+    // Flat color has no edges → Laplacian ≈ 0 → detected as blurry
     const flatImage = await createTestImage({ width: 400, height: 400 });
     const variance = await computeLaplacianVariance(flatImage);
-    // Flat color = very low laplacian = blurry detection would trigger
     expect(variance).toBeLessThan(50);
   });
 });
