@@ -8,5 +8,8 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/setupTests.ts',
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
+    typecheck: {
+      tsconfig: './tsconfig.test.json',
+    },
   },
 });
