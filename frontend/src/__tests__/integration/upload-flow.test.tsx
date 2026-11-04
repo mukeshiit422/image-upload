@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import App from '../../App';
 import * as api from '../../services/api';
+import { ImageStatus } from '../../types';
 
 vi.mock('../../services/api');
 const mockApi = vi.mocked(api);
@@ -20,13 +21,13 @@ describe('Upload flow integration', () => {
     mockApi.uploadImage.mockResolvedValue({
       id: 'test-id-123',
       originalName: 'photo.jpg',
-      status: 'PENDING',
+      status: ImageStatus.PENDING,
       message: 'Queued',
     });
     mockApi.getImageStatus.mockResolvedValue({
       id: 'test-id-123',
       originalName: 'photo.jpg',
-      status: 'ACCEPTED',
+      status: ImageStatus.ACCEPTED,
       storageUrl: 'https://d3eks1vjagjqcv.cloudfront.net/images/test.jpg',
       thumbnailUrl: 'https://d3eks1vjagjqcv.cloudfront.net/thumbnails/test.jpg',
       mimeType: 'image/jpeg',
