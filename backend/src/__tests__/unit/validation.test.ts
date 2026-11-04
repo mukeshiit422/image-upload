@@ -6,9 +6,19 @@ import { PrismaClient } from '@prisma/client';
 import { ValidationService } from '../../services/validation.service';
 import { RejectionReason } from '../../types';
 
-jest.mock('../../services/face-detection.service');
-jest.mock('../../utils/hash');
-jest.mock('../../services/image-processor.service');
+// Explicit factory prevents the module's top-level initialize() from running
+jest.mock('../../services/face-detection.service', () => ({
+  isFaceDetectionAvailable: jest.fn(),
+  detectFaces: jest.fn(),
+}));
+jest.mock('../../utils/hash', () => ({
+  computeLaplacianVariance: jest.fn(),
+  computePerceptualHash: jest.fn(),
+  hammingDistance: jest.fn(),
+}));
+jest.mock('../../services/image-processor.service', () => ({
+  getImageMetadata: jest.fn(),
+}));
 
 const mockFaceDetection = require('../../services/face-detection.service');
 const mockHash = require('../../utils/hash');
