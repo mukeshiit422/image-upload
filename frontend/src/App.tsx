@@ -42,7 +42,7 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <h1 className="text-base font-semibold text-gray-900 leading-tight">Image Upload</h1>
+              <h1 className="text-base font-semibold text-gray-900 leading-tight">Image Upload Server</h1>
               <p className="text-xs text-gray-400 leading-tight">JPEG · PNG · HEIC</p>
             </div>
           </div>
