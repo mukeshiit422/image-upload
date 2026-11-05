@@ -3,7 +3,7 @@ import os from 'os';
 
 // Set DATABASE_URL before Prisma client initialises (uses CI value or local fallback)
 const testDbUrl =
-  process.env.DATABASE_URL ??
+  process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@localhost:5432/image_upload_test';
 process.env.DATABASE_URL = testDbUrl;
 
