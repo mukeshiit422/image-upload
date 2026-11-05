@@ -33,7 +33,10 @@ export class CloudWatchTransport extends Transport {
     try {
       await this.client.send(new CreateLogGroupCommand({ logGroupName: this.logGroupName }));
     } catch (e: any) {
-      if (e.name !== 'ResourceAlreadyExistsException') return;
+      if (e.name !== 'ResourceAlreadyExistsException') {
+        console.error('[CloudWatchTransport] Failed to create log group:', e.message);
+        return;
+      }
     }
     try {
       await this.client.send(new CreateLogStreamCommand({
@@ -41,11 +44,14 @@ export class CloudWatchTransport extends Transport {
         logStreamName: this.logStreamName,
       }));
     } catch (e: any) {
-      if (e.name !== 'ResourceAlreadyExistsException') return;
+      if (e.name !== 'ResourceAlreadyExistsException') {
+        console.error('[CloudWatchTransport] Failed to create log stream:', e.message);
+        return;
+      }
     }
     this.ready = true;
     this.timer = setInterval(() => void this.flush(), flushIntervalMs);
-    this.timer.unref(); // don't prevent process exit
+    this.timer.unref();
   }
 
   private async flush(): Promise<void> {
