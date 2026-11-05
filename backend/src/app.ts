@@ -13,6 +13,9 @@ import { logger } from './utils/logger';
 export function createApp(prisma: PrismaClient, queueService: QueueService): express.Application {
   const app = express();
 
+  // Trust CloudFront/ALB proxy — required for rate limiting behind a reverse proxy
+  app.set('trust proxy', 1);
+
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
