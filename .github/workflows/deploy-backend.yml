@@ -106,6 +106,10 @@ jobs:
             git checkout main
             git pull origin main
             cd backend
-            npm install --omit=dev
+            npm install
             npm run build
-            pm2 restart backend --update-env
+            npm prune --omit=dev
+            pm2 describe backend > /dev/null 2>&1 \
+              && pm2 restart backend --update-env \
+              || pm2 start dist/server.js --name backend
+            pm2 save
